@@ -1,0 +1,71 @@
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap');
+
+:root {
+    --primary-color: #4361ee;
+    --bg-light: #f8f9fa;
+    --text-light: #212529;
+    --bg-dark: #121212;
+    --card-dark: #1e1e1e;
+    --text-dark: #e0e0e0;
+    --border-dark: #333;
+}
+
+body {
+    font-family: 'Cairo', sans-serif !important;
+    background-color: var(--bg-light);
+    color: var(--text-light);
+    transition: background-color 0.3s, color 0.3s;
+}
+
+/* تنسيق البطاقات */
+.card {
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    transition: transform 0.2s;
+    overflow: hidden;
+}
+
+/* الوضع الليلي الشامل */
+body.dark-mode {
+    background-color: var(--bg-dark) !important;
+    color: var(--text-dark) !important;
+}
+
+body.dark-mode .card,
+body.dark-mode .list-group-item,
+body.dark-mode .modal-content {
+    background-color: var(--card-dark) !important;
+    color: var(--text-dark) !important;
+    border-color: var(--border-dark);
+}
+
+body.dark-mode .form-control {
+    background-color: #2c2c2c;
+    border-color: #444;
+    color: #fff;
+}
+
+/* إصلاح زر الإغلاق في النافذة المنبثقة للوضع الليلي */
+body.dark-mode .btn-close {
+    filter: invert(1) grayscale(100%) brightness(200%);
+}
+
+/* تنسيق العناوين في الوضع الليلي */
+body.dark-mode h1, body.dark-mode h2, body.dark-mode h3, 
+body.dark-mode h4, body.dark-mode h5, body.dark-mode h6 {
+    color: #fff !important;
+}
+
+/* تنسيق الروابط في الوضع الليلي */
+body.dark-mode a.text-dark {
+    color: #e0e0e0 !important;
+}
+
+/* Navbar */
+.navbar {
+    background: linear-gradient(90deg, #0d6efd, #0a58ca) !important;
+}
+body.dark-mode .navbar {
+    background: linear-gradient(90deg, #1a1a1a, #000000) !important;
+}

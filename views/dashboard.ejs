@@ -1,0 +1,193 @@
+<div class="d-flex justify-content-between align-items-center mt-4 mb-4">
+    <h2>👋 أهلاً بك يا، <span class="text-primary"><%= username %></span></h2>
+    <div>
+        <button class="btn btn-outline-primary ms-2" data-bs-toggle="modal" data-bs-target="#changePassModal">
+            <i class="fas fa-key"></i> تغيير كلمة مروري
+        </button>
+        <a href="/logout" class="btn btn-danger">تسجيل خروج</a>
+    </div>
+</div>
+
+<div class="modal fade" id="changePassModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">تغيير كلمة المرور</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="/admin/change-password" method="POST">
+                <div class="modal-body">
+                    <label>كلمة المرور الجديدة</label>
+                    <input type="password" name="newPassword" class="form-control" required>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">حفظ</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<% if (isSuperAdmin) { %>
+<div class="card shadow-sm mb-5 border-primary">
+    <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+        <span><i class="fas fa-users-cog"></i> إدارة المشرفين</span>
+        <button class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#addAdminModal">
+            <i class="fas fa-user-plus"></i> مشرف جديد
+        </button>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th>اسم المشرف</th>
+                        <th>تحكم</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% admins.forEach(admin => { %>
+                        <tr>
+                            <td>
+                                <%= admin.username %> 
+                                <% if(admin.username === 'sayaf') { %> <span class="badge bg-danger">الرئيسي</span> <% } %>
+                            </td>
+                            <td>
+                                <% if(admin.username !== 'sayaf') { %>
+                                    <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#resetPass<%= admin._id %>">تغيير الباسورد</button>
+                                    <a href="/admin/delete-admin/<%= admin._id %>" class="btn btn-sm btn-danger" onclick="return confirm('حذف المشرف؟')">حذف</a>
+                                <% } else { %>
+                                    <small class="text-muted">لا يمكن التعديل</small>
+                                <% } %>
+                            </td>
+                        </tr>
+                    <% }) %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="addAdminModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-dark text-white">
+                <h5 class="modal-title">إضافة مشرف جديد</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="/admin/create-admin" method="POST">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label>اسم المستخدم</label>
+                        <input type="text" name="username" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label>كلمة المرور</label>
+                        <input type="password" name="password" class="form-control" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-dark">إنشاء</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<% admins.forEach(admin => { %>
+    <% if(admin.username !== 'sayaf') { %>
+    <div class="modal fade" id="resetPass<%= admin._id %>" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">تغيير باسورد: <%= admin.username %></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form action="/admin/reset-password/<%= admin._id %>" method="POST">
+                    <div class="modal-body">
+                        <input type="password" name="newPassword" class="form-control" placeholder="الباسورد الجديد" required>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-warning">تغيير</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <% } %>
+<% }) %>
+
+<% } %>
+
+<div class="row">
+    <div class="col-md-4 mb-4">
+        <div class="card shadow-sm">
+            <div class="card-header bg-success text-white">
+                <i class="fas fa-plus-circle"></i> إضافة فرع جديد
+            </div>
+            <div class="card-body">
+                <form action="/admin/add-branch" method="POST">
+                    <div class="mb-3">
+                        <label>اسم الفرع (مثلاً: العلمي)</label>
+                        <input type="text" name="name" class="form-control" required>
+                    </div>
+                    <button type="submit" class="btn btn-success w-100">إضافة</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-8">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <i class="fas fa-list"></i> الفروع الحالية
+            </div>
+            <div class="card-body p-0">
+                <% if(branches.length > 0) { %>
+                    <ul class="list-group list-group-flush">
+                        <% branches.forEach(branch => { %>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <span class="fw-bold fs-5"><%= branch.name %></span>
+                                <div>
+                                    <button class="btn btn-warning btn-sm me-1" data-bs-toggle="modal" data-bs-target="#editModal<%= branch._id %>">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <form action="/admin/delete-branch/<%= branch._id %>" method="POST" style="display:inline;" onsubmit="return confirm('تنبيه: سيتم حذف جميع الكتب داخل هذا الفرع! هل أنت متأكد؟');">
+                                        <button type="submit" class="btn btn-danger btn-sm">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </li>
+                        <% }) %>
+                    </ul>
+                <% } else { %>
+                    <div class="p-4 text-center text-muted">لا يوجد فروع مضافة بعد.</div>
+                <% } %>
+            </div>
+        </div>
+    </div>
+</div>
+
+<% if(branches.length > 0) { %>
+    <% branches.forEach(branch => { %>
+        <div class="modal fade" id="editModal<%= branch._id %>" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">تعديل اسم الفرع</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <form action="/admin/edit-branch/<%= branch._id %>" method="POST">
+                        <div class="modal-body">
+                            <input type="text" name="name" class="form-control" value="<%= branch.name %>" required>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="submit" class="btn btn-primary">حفظ</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    <% }) %>
+<% } %>

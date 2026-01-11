@@ -1,0 +1,23 @@
+<div class="text-center mt-5">
+    <h1 class="display-4 fw-bold">موقع الصف الحادي عشر</h1>
+    <p class="lead">اختر الفرع للبدء في تصفح الكتب والملفات</p>
+</div>
+
+<div class="row mt-5 justify-content-center">
+    <% if(branches.length > 0) { %>
+        <% branches.forEach(branch => { %>
+            <div class="col-md-4 mb-4">
+                <div class="card text-center h-100 shadow-sm hover-effect">
+                    <div class="card-body d-flex flex-column justify-content-center">
+                        <h3 class="card-title"><%= branch.name %></h3>
+                        <a href="/branch/<%= branch._id %>" class="btn btn-outline-primary mt-3">تصفح الكتب</a>
+                    </div>
+                </div>
+            </div>
+        <% }) %>
+    <% } else { %>
+        <div class="alert alert-info text-center">
+            الموقع قيد التجهيز، يرجى الانتظار لإضافة الفروع.
+        </div>
+    <% } %>
+</div>

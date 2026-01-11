@@ -1,0 +1,25 @@
+<div class="row justify-content-center mt-5">
+    <div class="col-md-4">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white text-center">
+                <h4>🔐 تسجيل دخول الأدمن</h4>
+            </div>
+            <div class="card-body">
+                <form action="/admin/login" method="POST">
+                    <div class="mb-3">
+                        <label>اسم المستخدم</label>
+                        <input type="text" name="username" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label>كلمة المرور</label>
+                        <input type="password" name="password" class="form-control" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">دخول</button>
+                </form>
+            </div>
+        </div>
+        <div class="text-center mt-3">
+            <a href="/" class="text-decoration-none">العودة للرئيسية</a>
+        </div>
+    </div>
+</div>
