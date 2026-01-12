@@ -17,7 +17,7 @@ const app = express();
 // 1. الاتصال بقاعدة البيانات
 // ============================================================
 // ملاحظة: عند الرفع أونلاين، استبدل الرابط أدناه برابط MongoDB Atlas
-mongoose.connect('mongodb+srv://sayaf:<sayaf123>@cluster0.ysr17vy.mongodb.net/?appName=Cluster0')
+mongoose.connect('mongodb+srv://sayaf:sayaf123@cluster0.ysr17vy.mongodb.net/?appName=Cluster0')
     .then(() => console.log('✅ Database Connected'))
     .catch(err => console.log('❌ DB Error:', err));
 
@@ -230,4 +230,5 @@ app.get('/admin/delete-file/:sectionId/:fileIndex', checkAdmin, async (req, res)
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`🚀 Server is running on port ${PORT}`);
+
 });
