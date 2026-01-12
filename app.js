@@ -16,7 +16,6 @@ const app = express();
 // ============================================================
 // 1. الاتصال بقاعدة البيانات
 // ============================================================
-// ملاحظة: عند الرفع أونلاين، استبدل الرابط أدناه برابط MongoDB Atlas
 mongoose.connect('mongodb+srv://sayaf:sayaf123@cluster0.ysr17vy.mongodb.net/?appName=Cluster0')
     .then(() => console.log('✅ Database Connected'))
     .catch(err => console.log('❌ DB Error:', err));
@@ -159,18 +158,27 @@ app.get('/branch/:id', async (req, res) => {
     } catch (err) { res.redirect('/'); }
 });
 
-// إضافة كتاب (تم تحويل الصورة لرابط نصي)
 app.post('/admin/add-book', checkAdmin, async (req, res) => {
     try {
         await Book.create({
             name: req.body.name,
-            image: req.body.coverImage, // رابط الصورة
+            image: req.body.coverImage,
             branch: req.body.branchId
         });
         res.redirect('/branch/' + req.body.branchId);
-    } catch (err) {
-        res.send("خطأ في إضافة الكتاب");
-    }
+    } catch (err) { res.send("خطأ في إضافة الكتاب"); }
+});
+
+// >>>>> جديد: تعديل الكتاب <<<<<
+app.post('/admin/edit-book/:id', checkAdmin, async (req, res) => {
+    try {
+        await Book.findByIdAndUpdate(req.params.id, {
+            name: req.body.name,
+            image: req.body.coverImage
+        });
+        // إعادة التوجيه للصفحة السابقة (سواء كانت الفرع أو صفحة الكتاب)
+        res.redirect(req.get('referer'));
+    } catch (err) { res.send("خطأ في تعديل الكتاب"); }
 });
 
 app.get('/admin/delete-book/:id', checkAdmin, async (req, res) => {
@@ -181,7 +189,7 @@ app.get('/admin/delete-book/:id', checkAdmin, async (req, res) => {
     res.redirect('/branch/' + branchId);
 });
 
-// --- إدارة المحتوى (الأقسام وروابط جوجل درايف) ---
+// --- إدارة المحتوى (الأقسام والملفات) ---
 
 app.get('/book/:id', async (req, res) => {
     try {
@@ -194,6 +202,14 @@ app.get('/book/:id', async (req, res) => {
 app.post('/admin/add-section', checkAdmin, async (req, res) => {
     await Section.create({ name: req.body.name, book: req.body.bookId });
     res.redirect('/book/' + req.body.bookId);
+});
+
+// >>>>> جديد: تعديل اسم القسم <<<<<
+app.post('/admin/edit-section/:id', checkAdmin, async (req, res) => {
+    try {
+        const section = await Section.findByIdAndUpdate(req.params.id, { name: req.body.name });
+        res.redirect('/book/' + section.book);
+    } catch (err) { res.send("خطأ في تعديل القسم"); }
 });
 
 app.get('/admin/delete-section/:id', checkAdmin, async (req, res) => {
@@ -218,6 +234,29 @@ app.post('/admin/add-link', checkAdmin, async (req, res) => {
     } catch (err) { res.send("خطأ في إضافة الرابط"); }
 });
 
+// >>>>> جديد: تعديل تفاصيل الملف <<<<<
+app.post('/admin/edit-file', checkAdmin, async (req, res) => {
+    try {
+        const { sectionId, bookId, fileId, fileName, fileUrl, description } = req.body;
+        
+        // البحث عن القسم وتحديث العنصر المحدد داخل مصفوفة الملفات
+        await Section.findOneAndUpdate(
+            { "_id": sectionId, "files._id": fileId },
+            {
+                "$set": {
+                    "files.$.fileName": fileName,
+                    "files.$.filePath": fileUrl,
+                    "files.$.description": description
+                }
+            }
+        );
+        res.redirect('/book/' + bookId);
+    } catch (err) { 
+        console.log(err);
+        res.send("خطأ في تعديل الملف"); 
+    }
+});
+
 app.get('/admin/delete-file/:sectionId/:fileIndex', checkAdmin, async (req, res) => {
     try {
         const section = await Section.findById(req.params.sectionId);
@@ -230,5 +269,4 @@ app.get('/admin/delete-file/:sectionId/:fileIndex', checkAdmin, async (req, res)
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`🚀 Server is running on port ${PORT}`);
-
 });
