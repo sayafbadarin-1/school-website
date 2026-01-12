@@ -3,7 +3,6 @@
 :root {
     --primary-color: #4361ee;
     --primary-gradient: linear-gradient(135deg, #4361ee 0%, #3a0ca3 100%);
-    --secondary-color: #3f37c9;
     --bg-light: #f3f4f6;
     --card-bg: #ffffff;
     --text-main: #2b2d42;
@@ -14,16 +13,40 @@
     --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* الوضع الليلي */
+/* ================= الوضع الليلي ================= */
 body.dark-mode {
     --bg-light: #121212;
     --card-bg: #1e1e2e;
     --text-main: #e0e0e0;
-    --text-muted: #a0a0a0;
+    --text-muted: #b0b0b0;
     --shadow-sm: 0 2px 8px rgba(0,0,0,0.3);
     --shadow-md: 0 8px 24px rgba(0,0,0,0.5);
 }
 
+/* إجبار النصوص لتصبح بيضاء في الوضع الليلي */
+body.dark-mode h1, 
+body.dark-mode h2, 
+body.dark-mode h3, 
+body.dark-mode h4, 
+body.dark-mode h5, 
+body.dark-mode h6,
+body.dark-mode .card-title,
+body.dark-mode .accordion-button:not(.collapsed),
+body.dark-mode .nav-link,
+body.dark-mode .dropdown-item {
+    color: #ffffff !important;
+}
+
+/* تحويل العناصر اللي ماخذة كلاس text-dark لتصير بيضاء غصب عنها */
+body.dark-mode .text-dark {
+    color: #e0e0e0 !important;
+}
+
+body.dark-mode .text-muted {
+    color: #a0a0a0 !important;
+}
+
+/* ================= التنسيقات العامة ================= */
 body {
     font-family: 'Cairo', sans-serif !important;
     background-color: var(--bg-light);
@@ -89,12 +112,13 @@ body {
     transform: scale(1.02);
 }
 
-/* Inputs */
+/* Inputs (حقول الكتابة) */
 .form-control {
     background-color: var(--bg-light);
     border: 1px solid transparent;
     border-radius: 10px;
     padding: 12px;
+    color: var(--text-main); /* لون النص يتبع المتغير */
     transition: var(--transition);
 }
 
@@ -102,18 +126,29 @@ body {
     background-color: var(--card-bg);
     border-color: var(--primary-color);
     box-shadow: 0 0 0 4px rgba(67, 97, 238, 0.15);
+    color: var(--text-main);
 }
 
-/* Dark Mode Specifics */
+/* تعديل خاص لحقول الإدخال في الوضع الليلي */
 body.dark-mode .form-control {
     background-color: #2a2a3c;
-    color: #fff;
+    border-color: #444;
+    color: #fff !important; /* النص أبيض */
 }
+
+body.dark-mode .form-control::placeholder {
+    color: #888;
+}
+
 body.dark-mode .navbar-toggler-icon {
     filter: invert(1);
 }
 
-/* تحسينات إضافية */
+body.dark-mode .btn-close {
+    filter: invert(1) grayscale(100%) brightness(200%);
+}
+
+/* Accordion & List Groups */
 .accordion-item {
     background-color: transparent;
     border: none;
@@ -132,10 +167,16 @@ body.dark-mode .navbar-toggler-icon {
     color: var(--primary-color);
 }
 
+body.dark-mode .accordion-button {
+    background-color: var(--card-bg);
+    color: #fff;
+}
+
 .accordion-body {
     background-color: var(--bg-light);
     border-radius: 12px;
     margin-top: 5px;
+    color: var(--text-main);
 }
 
 .list-group-item {
@@ -144,4 +185,20 @@ body.dark-mode .navbar-toggler-icon {
     margin-bottom: 5px;
     border-radius: 8px !important;
     color: var(--text-main);
+}
+
+body.dark-mode .list-group-item {
+    border-color: #444;
+}
+
+/* Dropdown Menu in Dark Mode */
+body.dark-mode .dropdown-menu {
+    background-color: var(--card-bg);
+    border-color: #444;
+}
+body.dark-mode .dropdown-item {
+    color: #e0e0e0;
+}
+body.dark-mode .dropdown-item:hover {
+    background-color: #333;
 }
