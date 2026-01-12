@@ -20,120 +20,37 @@ body.dark-mode {
     --text-main: #e0e0e0;
     --text-muted: #b0b0b0;
     --shadow-sm: 0 2px 8px rgba(0,0,0,0.3);
-    --shadow-md: 0 8px 24px rgba(0,0,0,0.5);
+    background-color: #121212;
+    color: #e0e0e0;
 }
 
-/* إجبار النصوص لتصبح بيضاء في الوضع الليلي */
-body.dark-mode h1, 
-body.dark-mode h2, 
-body.dark-mode h3, 
-body.dark-mode h4, 
-body.dark-mode h5, 
-body.dark-mode h6,
-body.dark-mode .card-title,
-body.dark-mode .accordion-button:not(.collapsed),
-body.dark-mode .nav-link,
+body.dark-mode .card {
+    background-color: var(--card-bg);
+    border-color: #333;
+}
+
+body.dark-mode .navbar {
+    background-color: #1e1e2e !important;
+    border-bottom: 1px solid #333;
+}
+
+body.dark-mode .dropdown-menu {
+    background-color: #2a2a3c;
+    border-color: #444;
+}
+
 body.dark-mode .dropdown-item {
-    color: #ffffff !important;
+    color: #e0e0e0;
 }
 
-/* تحويل العناصر اللي ماخذة كلاس text-dark لتصير بيضاء غصب عنها */
-body.dark-mode .text-dark {
-    color: #e0e0e0 !important;
+body.dark-mode .dropdown-item:hover {
+    background-color: #3f3f5a;
 }
 
-body.dark-mode .text-muted {
-    color: #a0a0a0 !important;
-}
-
-/* ================= التنسيقات العامة ================= */
-body {
-    font-family: 'Cairo', sans-serif !important;
-    background-color: var(--bg-light);
-    color: var(--text-main);
-    transition: var(--transition);
-    min-height: 100vh;
-}
-
-/* Navbar */
-.navbar {
-    background: var(--card-bg) !important;
-    box-shadow: var(--shadow-sm);
-    backdrop-filter: blur(10px);
-    padding: 0.8rem 1rem;
-}
-
-.navbar-brand {
-    font-weight: 800;
-    color: var(--primary-color) !important;
-    font-size: 1.5rem;
-}
-
-.nav-link {
-    color: var(--text-main) !important;
-    font-weight: 600;
-    transition: var(--transition);
-}
-
-.nav-link:hover {
-    color: var(--primary-color) !important;
-}
-
-/* Cards */
-.card {
-    background-color: var(--card-bg);
-    border: none;
-    border-radius: var(--border-radius);
-    box-shadow: var(--shadow-sm);
-    transition: var(--transition);
-    overflow: hidden;
-}
-
-.card:hover {
-    transform: translateY(-5px);
-    box-shadow: var(--shadow-md);
-}
-
-/* Buttons */
-.btn {
-    border-radius: 10px;
-    padding: 8px 20px;
-    font-weight: 600;
-    transition: var(--transition);
-}
-
-.btn-primary {
-    background: var(--primary-gradient);
-    border: none;
-}
-
-.btn-primary:hover {
-    opacity: 0.9;
-    transform: scale(1.02);
-}
-
-/* Inputs (حقول الكتابة) */
-.form-control {
-    background-color: var(--bg-light);
-    border: 1px solid transparent;
-    border-radius: 10px;
-    padding: 12px;
-    color: var(--text-main); /* لون النص يتبع المتغير */
-    transition: var(--transition);
-}
-
-.form-control:focus {
-    background-color: var(--card-bg);
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 4px rgba(67, 97, 238, 0.15);
-    color: var(--text-main);
-}
-
-/* تعديل خاص لحقول الإدخال في الوضع الليلي */
 body.dark-mode .form-control {
     background-color: #2a2a3c;
     border-color: #444;
-    color: #fff !important; /* النص أبيض */
+    color: #fff !important; 
 }
 
 body.dark-mode .form-control::placeholder {
@@ -176,14 +93,11 @@ body.dark-mode .accordion-button {
     background-color: var(--bg-light);
     border-radius: 12px;
     margin-top: 5px;
-    color: var(--text-main);
 }
 
 .list-group-item {
     background-color: var(--card-bg);
-    border: 1px solid rgba(0,0,0,0.05);
-    margin-bottom: 5px;
-    border-radius: 8px !important;
+    border-color: rgba(0,0,0,0.05);
     color: var(--text-main);
 }
 
@@ -191,14 +105,39 @@ body.dark-mode .list-group-item {
     border-color: #444;
 }
 
-/* Dropdown Menu in Dark Mode */
-body.dark-mode .dropdown-menu {
-    background-color: var(--card-bg);
-    border-color: #444;
+/* العامة */
+body {
+    font-family: 'Cairo', sans-serif;
+    background-color: var(--bg-light);
+    color: var(--text-main);
 }
-body.dark-mode .dropdown-item {
-    color: #e0e0e0;
+
+.navbar {
+    background-color: #fff;
 }
-body.dark-mode .dropdown-item:hover {
-    background-color: #333;
+
+/* شريط الإعلانات الجديد */
+.news-ticker-container {
+    width: 100%;
+    z-index: 1050;
+    border-bottom: 1px solid #d39e00;
+}
+
+.scrolling-text {
+    display: inline-block;
+    white-space: nowrap;
+    animation: scroll-left 20s linear infinite;
+    padding-left: 100%; 
+}
+
+/* حركة النص من اليمين لليسار */
+@keyframes scroll-left {
+    0% { transform: translateX(100%); }
+    100% { transform: translateX(-100%); }
+}
+
+@media (max-width: 768px) {
+    .scrolling-text {
+        animation-duration: 10s;
+    }
 }
