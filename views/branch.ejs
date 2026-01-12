@@ -19,9 +19,15 @@
             <div class="col-6 col-md-3 mb-4 position-relative">
                 
                 <% if (isAdmin) { %>
-                    <a href="/admin/delete-book/<%= book._id %>" class="btn btn-danger btn-sm position-absolute top-0 end-0 m-2" style="z-index: 10;" onclick="return confirm('هل أنت متأكد من حذف هذا الكتاب؟')">
-                        <i class="fas fa-times"></i>
-                    </a>
+                    <div class="position-absolute top-0 end-0 m-2" style="z-index: 10;">
+                        <button class="btn btn-warning btn-sm mb-1" data-bs-toggle="modal" data-bs-target="#editBookModal<%= book._id %>">
+                            <i class="fas fa-pen"></i>
+                        </button>
+                        
+                        <a href="/admin/delete-book/<%= book._id %>" class="btn btn-danger btn-sm" onclick="return confirm('هل أنت متأكد من حذف هذا الكتاب؟')">
+                            <i class="fas fa-times"></i>
+                        </a>
+                    </div>
                 <% } %>
 
                 <a href="/book/<%= book._id %>" class="text-decoration-none">
@@ -33,6 +39,35 @@
                     </div>
                 </a>
             </div>
+
+            <% if (isAdmin) { %>
+                <div class="modal fade" id="editBookModal<%= book._id %>" tabindex="-1">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">تعديل الكتاب</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <form action="/admin/edit-book/<%= book._id %>" method="POST">
+                                <div class="modal-body">
+                                    <div class="mb-3">
+                                        <label>اسم الكتاب</label>
+                                        <input type="text" name="name" class="form-control" value="<%= book.name %>" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label>رابط الصورة</label>
+                                        <input type="url" name="coverImage" class="form-control" value="<%= book.image %>" required>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="submit" class="btn btn-primary">حفظ</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            <% } %>
+
         <% }) %>
     <% } else { %>
         <div class="col-12 text-center text-muted py-5">
