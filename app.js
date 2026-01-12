@@ -15,7 +15,7 @@ const Ticker = require('./models/Ticker'); // المودل الجديد
 
 const app = express();
 
-// الاتصال بقاعدة البيانات
+// الاتصال بقاعدة البيانات (يفضل نقل الرابط لملف .env مستقبلاً للأمان)
 mongoose.connect('mongodb+srv://sayaf:sayaf123@cluster0.ysr17vy.mongodb.net/?appName=Cluster0')
     .then(() => console.log('✅ Database Connected'))
     .catch(err => console.log('❌ DB Error:', err));
@@ -28,67 +28,69 @@ app.use(express.static('public'));
 app.use(express.urlencoded({ extended: true }));
 
 app.use(session({
-    secret: 'my_super_secret_key_sayaf',
+    secret: 'my_super_secret_key_sayaf', // يفضل تغييره لكلمة أصعب
     resave: false,
     saveUninitialized: false
 }));
 
-// Middleware لتمرير البيانات لكل الصفحات
+// Middleware: تمرير البيانات لكل الصفحات (User, Admin, Ticker)
 app.use(async (req, res, next) => {
     res.locals.user = req.session.username || null;
-    res.locals.isAdmin = req.session.adminId ? true : false;
+    res.locals.isAdmin = !!req.session.adminId;
     res.locals.isSuperAdmin = req.session.role === 'superadmin';
 
-    // كود شريط الأخبار الجديد
+    // جلب شريط الأخبار
     try {
         let ticker = await Ticker.findOne();
         if (!ticker) {
+            // إنشاء شريط افتراضي إذا لم يوجد
             ticker = await Ticker.create({ content: 'مرحباً بكم في الموقع', isActive: true });
         }
         res.locals.ticker = ticker;
     } catch (err) {
-        console.error(err);
+        console.error("Ticker Error:", err);
         res.locals.ticker = null;
     }
     
     next();
 });
 
-// --- Routes (المسارات) ---
+// --- Routes (المسارات العامة) ---
 
-// الصفحة الرئيسية
 app.get('/', async (req, res) => {
     const branches = await Branch.find();
     res.render('index', { branches });
 });
 
-// صفحة الفرع
 app.get('/branch/:id', async (req, res) => {
-    const branch = await Branch.findById(req.params.id);
-    const books = await Book.find({ branch: req.params.id });
-    res.render('branch', { branch, books });
+    try {
+        const branch = await Branch.findById(req.params.id);
+        const books = await Book.find({ branch: req.params.id });
+        res.render('branch', { branch, books });
+    } catch (e) { res.redirect('/'); }
 });
 
-// صفحة الكتاب
 app.get('/book/:id', async (req, res) => {
-    const book = await Book.findById(req.params.id).populate('branch');
-    const sections = await Section.find({ book: req.params.id });
-    res.render('book', { book, sections });
+    try {
+        const book = await Book.findById(req.params.id).populate('branch');
+        const sections = await Section.find({ book: req.params.id });
+        res.render('book', { book, sections });
+    } catch (e) { res.redirect('/'); }
 });
 
-// صفحة النصائح
 app.get('/tips', async (req, res) => {
     const tips = await Tip.find().sort({ createdAt: -1 });
     res.render('tips', { tips });
 });
 
-// صفحة المفضلة
 app.get('/favorites', (req, res) => {
     res.render('favorites');
 });
 
-// --- Admin Auth ---
+// --- Authentication (تسجيل الدخول) ---
+
 app.get('/admin/login', (req, res) => {
+    if (req.session.adminId) return res.redirect('/admin/dashboard');
     res.render('login');
 });
 
@@ -111,7 +113,7 @@ app.get('/logout', (req, res) => {
     });
 });
 
-// حماية الراوتات
+// --- Middlewares للحماية ---
 const checkAdmin = (req, res, next) => {
     if (req.session.adminId) next();
     else res.redirect('/admin/login');
@@ -122,11 +124,12 @@ const checkSuperAdmin = (req, res, next) => {
     else res.redirect('/admin/dashboard');
 };
 
-// --- لوحة التحكم ---
+// --- لوحة التحكم (Dashboard) ---
+
 app.get('/admin/dashboard', checkAdmin, async (req, res) => {
     const branches = await Branch.find();
-    const admins = await Admin.find(); // للسوبر أدمن
-    const ticker = await Ticker.findOne(); // للشريط
+    const admins = await Admin.find();
+    const ticker = await Ticker.findOne();
     
     res.render('dashboard', { 
         username: req.session.username,
@@ -136,13 +139,13 @@ app.get('/admin/dashboard', checkAdmin, async (req, res) => {
     });
 });
 
-// إضافة وتعديل شريط الأخبار (جديد)
+// تحديث شريط الأخبار
 app.post('/admin/update-ticker', checkAdmin, async (req, res) => {
     const { content, isActive } = req.body;
     await Ticker.findOneAndUpdate({}, { 
         content: content,
         isActive: isActive === 'on' 
-    }, { upsert: true }); // upsert يعني لو مش موجود أنشئه
+    }, { upsert: true });
     res.redirect('/admin/dashboard');
 });
 
@@ -154,12 +157,6 @@ app.post('/admin/add-branch', checkAdmin, async (req, res) => {
 
 app.post('/admin/edit-branch/:id', checkAdmin, async (req, res) => {
     await Branch.findByIdAndUpdate(req.params.id, { name: req.body.name });
-    res.redirect('/admin/dashboard');
-});
-
-app.get('/admin/delete-branch/:id', checkAdmin, async (req, res) => {
-    // تنبيه: هذا مجرد مثال، المفروض نحذف الكتب والاقسام التابعة للفرع كمان
-    await Branch.findByIdAndDelete(req.params.id);
     res.redirect('/admin/dashboard');
 });
 
@@ -196,7 +193,12 @@ app.post('/admin/edit-section/:id', checkAdmin, async (req, res) => {
     res.redirect(req.get('referer'));
 });
 
-// إضافة وحذف الروابط/الملفات
+app.get('/admin/delete-section/:id', checkAdmin, async (req, res) => {
+    await Section.findByIdAndDelete(req.params.id);
+    res.redirect(req.get('referer'));
+});
+
+// إدارة الملفات (إضافة / تعديل / حذف)
 app.post('/admin/add-link', checkAdmin, async (req, res) => {
     const { sectionId, bookId, fileName, fileUrl, description } = req.body;
     await Section.findByIdAndUpdate(sectionId, {
@@ -214,20 +216,17 @@ app.post('/admin/edit-file', checkAdmin, async (req, res) => {
     res.redirect('/book/' + bookId);
 });
 
-app.get('/admin/delete-file/:sectionId/:fileIndex', checkAdmin, async (req, res) => {
-    // ملاحظة: الحذف من المصفوفة باستخدام الـ index قد يكون صعباً قليلاً بالـ mongo مباشرة
-    // الأسهل سحب المصفوفة، تعديلها، وإعادة حفظها، أو استخدام $pull مع الـ ID
-    // للتبسيط هنا سنستخدم طريقة $pull إذا كان معنا ID الملف، أو index إذا لا.
-    // سنفترض أنك سترسل ID الملف في الرابط بدلاً من الـ index مستقبلاً لتحسين الكود
-    // حالياً سنتركها كما هي إذا كانت تعمل لديك، أو نحدثها:
-    
-    // الحل الأفضل: استخدام fileId
-    // app.get('/admin/delete-file/:sectionId/:fileId', ... )
-    // await Section.findByIdAndUpdate(req.params.sectionId, { $pull: { files: { _id: req.params.fileId } } });
-    
+// (تم التعديل) الحذف الآن يعتمد على ID الملف وليس الـ Index لضمان الدقة
+app.get('/admin/delete-file/:sectionId/:fileId', checkAdmin, async (req, res) => {
+    try {
+        await Section.findByIdAndUpdate(req.params.sectionId, {
+            $pull: { files: { _id: req.params.fileId } }
+        });
+    } catch (error) {
+        console.error("Delete File Error:", error);
+    }
     res.redirect(req.get('referer'));
 });
-// (ملاحظة: تأكد من كود الحذف لديك، الكود أعلاه مجرد هيكل)
 
 // إدارة النصائح
 app.post('/admin/add-tip', checkAdmin, async (req, res) => {
@@ -245,10 +244,10 @@ app.get('/admin/delete-tip/:id', checkAdmin, async (req, res) => {
     res.redirect('/tips');
 });
 
-// إدارة الأدمنز (للسوبر أدمن فقط)
+// إدارة الأدمنز (Super Admin Only)
 app.post('/admin/add-admin', checkSuperAdmin, async (req, res) => {
-    const hashedPassword = await bcrypt.hash(req.body.password, 10);
     try {
+        const hashedPassword = await bcrypt.hash(req.body.password, 10);
         await Admin.create({ 
             username: req.body.username, 
             password: hashedPassword,
@@ -256,7 +255,7 @@ app.post('/admin/add-admin', checkSuperAdmin, async (req, res) => {
         });
         res.redirect('/admin/dashboard');
     } catch(e) {
-        res.send('Error: Username likely exists');
+        res.send('<script>alert("اسم المستخدم موجود مسبقاً"); window.history.back();</script>');
     }
 });
 
@@ -265,11 +264,10 @@ app.get('/admin/delete-admin/:id', checkSuperAdmin, async (req, res) => {
     res.redirect('/admin/dashboard');
 });
 
-// تغيير كلمة المرور
 app.post('/admin/change-password', checkAdmin, async (req, res) => {
     const hashedPassword = await bcrypt.hash(req.body.newPassword, 10);
     await Admin.findByIdAndUpdate(req.session.adminId, { password: hashedPassword });
-    res.redirect('/admin/dashboard');
+    res.send('<script>alert("تم تغيير كلمة المرور بنجاح"); window.location.href="/admin/dashboard";</script>');
 });
 
 const PORT = process.env.PORT || 3000;
