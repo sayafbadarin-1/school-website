@@ -1,8 +1,15 @@
 <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
     <div>
         <h4 class="text-muted mb-0">كتاب:</h4>
-        <h2 class="fw-bold text-primary"><%= book.name %></h2>
-        <span class="badge bg-secondary"><%= book.branch.name %></span>
+        <h2 class="fw-bold text-primary d-inline-block"><%= book.name %></h2>
+        
+        <% if (isAdmin) { %>
+            <button class="btn btn-sm btn-outline-secondary ms-2" data-bs-toggle="modal" data-bs-target="#editBookModal">
+                <i class="fas fa-edit"></i>
+            </button>
+        <% } %>
+
+        <span class="badge bg-secondary d-block mt-1 w-auto" style="width: fit-content;"><%= book.branch.name %></span>
     </div>
     <a href="/branch/<%= book.branch._id %>" class="btn btn-secondary">
         <i class="fas fa-arrow-right"></i> رجوع للفرع
@@ -13,6 +20,32 @@
     <button class="btn btn-primary mb-4 shadow" data-bs-toggle="modal" data-bs-target="#addSectionModal">
         <i class="fas fa-folder-plus"></i> إنشاء قسم جديد
     </button>
+
+    <div class="modal fade" id="editBookModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-warning text-dark">
+                    <h5 class="modal-title">تعديل بيانات الكتاب</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form action="/admin/edit-book/<%= book._id %>" method="POST">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label>اسم الكتاب</label>
+                            <input type="text" name="name" class="form-control" value="<%= book.name %>" required>
+                        </div>
+                        <div class="mb-3">
+                            <label>رابط صورة الغلاف</label>
+                            <input type="url" name="coverImage" class="form-control" value="<%= book.image %>" required>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-primary">حفظ التعديلات</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 <% } %>
 
 <div class="accordion" id="sectionsAccordion">
@@ -20,21 +53,28 @@
         <% sections.forEach((section, index) => { %>
             <div class="accordion-item mb-3 shadow-sm" style="border-radius: 10px; overflow: hidden; border:none;">
                 <h2 class="accordion-header" id="heading<%= index %>">
-                    <button class="accordion-button collapsed fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#collapse<%= index %>">
-                        <i class="fas fa-folder-open text-warning me-2 fs-4"></i> <%= section.name %>
+                    <button class="accordion-button collapsed fw-bold w-100 text-start d-flex justify-content-between align-items-center" type="button" data-bs-toggle="collapse" data-bs-target="#collapse<%= index %>">
+                        <span>
+                            <i class="fas fa-folder-open text-warning me-2 fs-4"></i> <%= section.name %>
+                        </span>
                     </button>
                 </h2>
                 <div id="collapse<%= index %>" class="accordion-collapse collapse" data-bs-parent="#sectionsAccordion">
                     <div class="accordion-body bg-light">
                         
                         <% if (isAdmin) { %>
-                            <div class="d-flex justify-content-end mb-3 border-bottom pb-2">
-                                <button class="btn btn-sm btn-success me-2" data-bs-toggle="modal" data-bs-target="#addLinkModal<%= section._id %>">
+                            <div class="d-flex justify-content-between mb-3 border-bottom pb-2">
+                                <div>
+                                    <button class="btn btn-sm btn-warning me-1" data-bs-toggle="modal" data-bs-target="#editSectionModal<%= section._id %>">
+                                        <i class="fas fa-edit"></i> تعديل الاسم
+                                    </button>
+                                    <a href="/admin/delete-section/<%= section._id %>" class="btn btn-sm btn-danger" onclick="return confirm('حذف القسم وكل الروابط فيه؟')">
+                                        <i class="fas fa-trash"></i> حذف
+                                    </a>
+                                </div>
+                                <button class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#addLinkModal<%= section._id %>">
                                     <i class="fab fa-google-drive"></i> إضافة رابط درايف
                                 </button>
-                                <a href="/admin/delete-section/<%= section._id %>" class="btn btn-sm btn-danger" onclick="return confirm('حذف القسم وكل الروابط فيه؟')">
-                                    <i class="fas fa-trash"></i> حذف القسم
-                                </a>
                             </div>
                         <% } %>
 
@@ -71,6 +111,10 @@
                                                 <i class="fas fa-download"></i> تنزيل
                                             </a>
                                             <% if (isAdmin) { %>
+                                                <button class="btn btn-sm btn-outline-warning" data-bs-toggle="modal" data-bs-target="#editFileModal<%= file._id %>">
+                                                    <i class="fas fa-pen"></i>
+                                                </button>
+
                                                 <a href="/admin/delete-file/<%= section._id %>/<%= fileIndex %>" class="btn btn-sm btn-outline-danger" onclick="return confirm('حذف الرابط؟')">
                                                     <i class="fas fa-times"></i>
                                                 </a>
@@ -92,6 +136,42 @@
                                         </div>
                                     </div>
 
+                                    <% if (isAdmin) { %>
+                                        <div class="modal fade" id="editFileModal<%= file._id %>" tabindex="-1">
+                                            <div class="modal-dialog">
+                                                <div class="modal-content">
+                                                    <div class="modal-header bg-warning text-dark">
+                                                        <h5 class="modal-title">تعديل الملف</h5>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                    </div>
+                                                    <form action="/admin/edit-file" method="POST">
+                                                        <div class="modal-body">
+                                                            <input type="hidden" name="sectionId" value="<%= section._id %>">
+                                                            <input type="hidden" name="bookId" value="<%= book._id %>">
+                                                            <input type="hidden" name="fileId" value="<%= file._id %>">
+                                                            
+                                                            <div class="mb-3">
+                                                                <label>اسم الملف</label>
+                                                                <input type="text" name="fileName" class="form-control" value="<%= file.fileName %>" required>
+                                                            </div>
+                                                            <div class="mb-3">
+                                                                <label>رابط الملف</label>
+                                                                <input type="url" name="fileUrl" class="form-control" value="<%= file.filePath %>" required>
+                                                            </div>
+                                                            <div class="mb-3">
+                                                                <label>الوصف</label>
+                                                                <input type="text" name="description" class="form-control" value="<%= file.description %>">
+                                                            </div>
+                                                        </div>
+                                                        <div class="modal-footer">
+                                                            <button type="submit" class="btn btn-primary">حفظ التعديلات</button>
+                                                        </div>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    <% } %>
+
                                 <% }) %>
                             </div>
                         <% } else { %>
@@ -101,6 +181,28 @@
                     </div>
                 </div>
             </div>
+
+            <% if (isAdmin) { %>
+                <div class="modal fade" id="editSectionModal<%= section._id %>" tabindex="-1">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">تعديل اسم القسم</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <form action="/admin/edit-section/<%= section._id %>" method="POST">
+                                <div class="modal-body">
+                                    <label>الاسم الجديد</label>
+                                    <input type="text" name="name" class="form-control" value="<%= section.name %>" required>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="submit" class="btn btn-primary">حفظ</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            <% } %>
 
             <div class="modal fade" id="addLinkModal<%= section._id %>" tabindex="-1">
                 <div class="modal-dialog">
