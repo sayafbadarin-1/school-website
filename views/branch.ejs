@@ -1,10 +1,6 @@
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2 class="fw-bold text-primary">
-        <i class="fas fa-folder-open"></i> قسم: <%= branch.name %>
-    </h2>
-    <a href="/" class="btn btn-secondary">
-        <i class="fas fa-arrow-right"></i> رجوع
-    </a>
+    <h2 class="fw-bold text-primary"><i class="fas fa-folder-open"></i> قسم: <%= branch.name %></h2>
+    <a href="/" class="btn btn-secondary"><i class="fas fa-arrow-right"></i> رجوع</a>
 </div>
 
 <% if (isAdmin) { %>
@@ -16,28 +12,28 @@
 <div class="row">
     <% if(books.length > 0) { %>
         <% books.forEach(book => { %>
-            <div class="col-6 col-md-3 mb-4 position-relative">
-                
-                <% if (isAdmin) { %>
-                    <div class="position-absolute top-0 end-0 m-2" style="z-index: 10;">
-                        <button class="btn btn-warning btn-sm mb-1" data-bs-toggle="modal" data-bs-target="#editBookModal<%= book._id %>">
-                            <i class="fas fa-pen"></i>
-                        </button>
-                        
-                        <a href="/admin/delete-book/<%= book._id %>" class="btn btn-danger btn-sm" onclick="return confirm('هل أنت متأكد من حذف هذا الكتاب؟')">
-                            <i class="fas fa-times"></i>
-                        </a>
-                    </div>
-                <% } %>
-
-                <a href="/book/<%= book._id %>" class="text-decoration-none">
-                    <div class="card h-100 book-card text-center p-3">
+            <div class="col-6 col-md-3 mb-4">
+                <div class="card h-100 book-card text-center p-3 shadow-sm border-0">
+                    <a href="/book/<%= book._id %>" class="text-decoration-none">
                         <img src="<%= book.image %>" class="card-img-top rounded mx-auto d-block" style="height: 150px; object-fit: contain;" alt="<%= book.name %>" onerror="this.src='https://via.placeholder.com/150?text=No+Image'">
-                        <div class="card-body">
+                        <div class="card-body pb-0">
                             <h5 class="card-title fw-bold mt-2 text-dark"><%= book.name %></h5>
                         </div>
-                    </div>
-                </a>
+                    </a>
+                    
+                    <% if (isAdmin) { %>
+                        <div class="card-footer bg-transparent border-0 mt-2">
+                            <div class="btn-group w-100" role="group">
+                                <button class="btn btn-outline-warning btn-sm" data-bs-toggle="modal" data-bs-target="#editBookModal<%= book._id %>">
+                                    <i class="fas fa-pen"></i> تعديل
+                                </button>
+                                <a href="/admin/delete-book/<%= book._id %>" class="btn btn-outline-danger btn-sm" onclick="return confirm('حذف؟')">
+                                    <i class="fas fa-trash"></i> حذف
+                                </a>
+                            </div>
+                        </div>
+                    <% } %>
+                </div>
             </div>
 
             <% if (isAdmin) { %>
@@ -67,40 +63,35 @@
                     </div>
                 </div>
             <% } %>
-
         <% }) %>
     <% } else { %>
         <div class="col-12 text-center text-muted py-5">
-            <h4>لا يوجد كتب مضافة في هذا الفرع بعد 📭</h4>
+            <h4>لا يوجد كتب مضافة هنا بعد 📭</h4>
         </div>
     <% } %>
 </div>
 
-<div class="modal fade" id="addBookModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
+<div class="modal fade" id="addBookModal" tabindex="-1">
+    <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header bg-success text-white">
-                <h5 class="modal-title">إضافة كتاب جديد</h5>
+                <h5 class="modal-title">إضافة كتاب</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <form action="/admin/add-book" method="POST">
                 <div class="modal-body">
                     <input type="hidden" name="branchId" value="<%= branch._id %>">
-                    
                     <div class="mb-3">
-                        <label class="form-label">اسم الكتاب</label>
+                        <label>اسم الكتاب</label>
                         <input type="text" name="name" class="form-control" required>
                     </div>
-                    
                     <div class="mb-3">
-                        <label class="form-label">رابط صورة الغلاف (URL)</label>
-                        <input type="url" name="coverImage" class="form-control" placeholder="https://example.com/image.jpg" required>
-                        <small class="text-muted">انسخ رابط الصورة من جوجل والصقه هنا</small>
+                        <label>رابط الصورة</label>
+                        <input type="url" name="coverImage" class="form-control" placeholder="https://..." required>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
-                    <button type="submit" class="btn btn-success">حفظ الكتاب</button>
+                    <button type="submit" class="btn btn-success">إضافة</button>
                 </div>
             </form>
         </div>
