@@ -16,25 +16,34 @@
 </head>
 <body class="d-flex flex-column min-vh-100">
 
-    <nav class="navbar navbar-expand-lg sticky-top mb-4">
+    <% if (locals.ticker && ticker.isActive) { %>
+        <div class="news-ticker-container bg-warning text-dark py-2 overflow-hidden position-relative">
+            <div class="news-ticker-content d-flex align-items-center">
+                <span class="badge bg-danger ms-2 me-2">عاجل</span>
+                <div class="scrolling-text fw-bold">
+                    <%= ticker.content %>
+                </div>
+            </div>
+        </div>
+    <% } %>
+
+    <nav class="navbar navbar-expand-lg sticky-top shadow-sm">
         <div class="container">
-            <a class="navbar-brand" href="/">
-                <i class="fas fa-graduation-cap text-primary me-2"></i> الحادي عشر
+            <a class="navbar-brand fw-bold" href="/">
+                <i class="fas fa-graduation-cap text-primary"></i> الحادي عشر
             </a>
-            
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
-
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                    <li class="nav-item"><a class="nav-link" href="/"><i class="fas fa-home me-1"></i> الرئيسية</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/tips"><i class="fas fa-lightbulb me-1"></i> نصائح وإرشادات</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/favorites"><i class="fas fa-heart me-1"></i> المفضلة</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/">الرئيسية</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/tips">نصائح</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/favorites">المفضلة</a></li>
                 </ul>
-                
-                <div class="d-flex align-items-center gap-3">
-                    <div onclick="toggleDarkMode()" class="btn btn-light rounded-circle shadow-sm" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; cursor: pointer;">
+                <div class="d-flex align-items-center">
+                    <div class="form-check form-switch me-3">
+                        <input class="form-check-input" type="checkbox" id="darkModeSwitch" onclick="toggleDarkMode()">
                         <i class="fas fa-moon text-primary" id="modeIcon"></i>
                     </div>
 
@@ -68,6 +77,6 @@
     </a>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="/js/main.js"></script> 
+    <script src="/js/main.js"></script>
 </body>
 </html>
