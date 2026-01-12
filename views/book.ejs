@@ -11,73 +11,82 @@
 </div>
 
 <% if (isAdmin) { %>
-    <button class="btn btn-primary mb-4 shadow" data-bs-toggle="modal" data-bs-target="#addSectionModal"><i class="fas fa-folder-plus"></i> إنشاء قسم/وحدة</button>
-    
+    <button class="btn btn-primary mb-4 shadow" data-bs-toggle="modal" data-bs-target="#addSectionModal"><i class="fas fa-folder-plus"></i> إنشاء قسم</button>
     <div class="modal fade" id="editBookModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><form action="/admin/edit-book/<%= book._id %>" method="POST"><div class="modal-body"><input type="text" name="name" class="form-control mb-2" value="<%= book.name %>"><input type="url" name="coverImage" class="form-control" value="<%= book.image %>"></div><div class="modal-footer"><button type="submit" class="btn btn-primary">حفظ</button></div></form></div></div></div>
 <% } %>
 
 <div class="accordion" id="sectionsAccordion">
     <% if(sections.length > 0) { %>
         <% sections.forEach((section, index) => { %>
-            <div class="accordion-item mb-3 shadow-sm border rounded overflow-hidden">
-                <h2 class="accordion-header" id="heading<%= section._id %>">
-                    <button class="accordion-button <%= index !== 0 ? 'collapsed' : '' %> fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#collapse<%= section._id %>">
-                        <i class="fas fa-layer-group me-2 text-primary"></i> <%= section.name %>
+            <div class="accordion-item mb-3 shadow-sm" style="border-radius: 10px; overflow: hidden; border:none;">
+                <h2 class="accordion-header" id="heading<%= index %>">
+                    <button class="accordion-button collapsed fw-bold w-100 text-start d-flex justify-content-between" type="button" data-bs-toggle="collapse" data-bs-target="#collapse<%= index %>">
+                        <span><i class="fas fa-folder-open text-warning me-2 fs-4"></i> <%= section.name %></span>
                     </button>
                 </h2>
-                <div id="collapse<%= section._id %>" class="accordion-collapse collapse <%= index === 0 ? 'show' : '' %>" data-bs-parent="#sectionsAccordion">
-                    <div class="accordion-body bg-white">
+                <div id="collapse<%= index %>" class="accordion-collapse collapse" data-bs-parent="#sectionsAccordion">
+                    <div class="accordion-body bg-light">
                         <% if (isAdmin) { %>
-                            <div class="mb-3 d-flex gap-2">
-                                <button class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#addFileModal<%= section._id %>"><i class="fas fa-plus"></i> إضافة ملف</button>
-                                <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#editSectionModal<%= section._id %>"><i class="fas fa-edit"></i> تعديل الاسم</button>
-                                <a href="/admin/delete-section/<%= section._id %>" class="btn btn-sm btn-danger" onclick="return confirm('هل أنت متأكد من حذف القسم وكافة محتوياته؟')"><i class="fas fa-trash"></i> حذف القسم</a>
+                            <div class="d-flex justify-content-between mb-3 border-bottom pb-2">
+                                <div>
+                                    <button class="btn btn-sm btn-warning me-1" data-bs-toggle="modal" data-bs-target="#editSectionModal<%= section._id %>"><i class="fas fa-edit"></i></button>
+                                    <a href="/admin/delete-section/<%= section._id %>" class="btn btn-sm btn-danger" onclick="return confirm('حذف؟')"><i class="fas fa-trash"></i></a>
+                                </div>
+                                <button class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#addLinkModal<%= section._id %>"><i class="fab fa-google-drive"></i> إضافة رابط</button>
                             </div>
                         <% } %>
 
-                        <div class="list-group">
-                            <% if(section.files.length > 0) { %>
-                                <% section.files.forEach((file) => { %>
-                                    <div class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                        <% if(section.files && section.files.length > 0) { %>
+                            <div class="list-group">
+                                <% section.files.forEach((file, fileIndex) => { %>
+                                    <% 
+                                        let previewUrl = file.filePath.replace('/view', '/preview');
+                                        let downloadUrl = file.filePath;
+                                        const idMatch = downloadUrl.match(/\/d\/(.+?)(\/|$)/);
+                                        if (idMatch && idMatch[1]) downloadUrl = 'https://drive.google.com/uc?export=download&id=' + idMatch[1];
+                                    %>
+                                    <div class="list-group-item d-flex justify-content-between align-items-center">
                                         <div class="d-flex align-items-center">
-                                            <button class="btn btn-link text-danger p-0 me-3 heart-btn" 
-                                                    onclick="addToFavorites('<%= file._id %>', '<%= file.fileName %>', '<%= file.filePath %>', '<%= file.description %>')">
-                                                <i class="far fa-heart"></i>
-                                            </button>
+                                            <i class="fab fa-google-drive text-success fs-3 me-3"></i>
                                             <div>
-                                                <div class="fw-bold text-dark"><i class="fas fa-file-alt text-muted me-2"></i><%= file.fileName %></div>
-                                                <% if(file.description) { %><small class="text-muted d-block"><%= file.description %></small><% } %>
+                                                <h6 class="mb-0 fw-bold"><%= file.fileName %></h6>
+                                                <% if(file.description) { %> <small class="text-muted"><%= file.description %></small> <% } %>
                                             </div>
                                         </div>
-                                        <div class="btn-group">
-                                            <a href="<%= file.filePath %>" target="_blank" class="btn btn-outline-primary btn-sm"><i class="fas fa-eye"></i> معاينة</a>
+                                        <div>
+                                            <button id="fav-btn-<%= file._id %>" class="btn btn-sm btn-outline-danger me-1" 
+                                                onclick="addToFavorites('<%= file._id %>', '<%= file.fileName %>', '<%= file.filePath %>', '<%= file.description || '' %>')">
+                                                <i class="fas fa-heart"></i>
+                                            </button>
+
+                                            <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#previewModal<%= section._id %>_<%= fileIndex %>"><i class="fas fa-eye"></i></button>
+                                            <a href="<%= downloadUrl %>" class="btn btn-sm btn-outline-success"><i class="fas fa-download"></i></a>
+                                            
                                             <% if (isAdmin) { %>
-                                                <button class="btn btn-outline-warning btn-sm" data-bs-toggle="modal" data-bs-target="#editFileModal<%= file._id %>"><i class="fas fa-pen"></i></button>
-                                                <a href="/admin/delete-file/<%= section._id %>/<%= file._id %>" class="btn btn-outline-danger btn-sm" onclick="return confirm('حذف الملف؟')"><i class="fas fa-trash"></i></a>
+                                                <button class="btn btn-sm btn-outline-warning" data-bs-toggle="modal" data-bs-target="#editFileModal<%= file._id %>"><i class="fas fa-pen"></i></button>
+                                                <a href="/admin/delete-file/<%= section._id %>/<%= fileIndex %>" class="btn btn-sm btn-outline-danger" onclick="return confirm('حذف؟')"><i class="fas fa-times"></i></a>
                                             <% } %>
                                         </div>
                                     </div>
 
+                                    <div class="modal fade" id="previewModal<%= section._id %>_<%= fileIndex %>" tabindex="-1"><div class="modal-dialog modal-xl modal-dialog-centered" style="max-width:90%;"><div class="modal-content" style="height:90vh;"><div class="modal-body p-0"><iframe src="<%= previewUrl %>" width="100%" height="100%" frameborder="0"></iframe></div><div class="modal-footer py-1"><button class="btn btn-sm btn-secondary" data-bs-dismiss="modal">إغلاق</button></div></div></div></div>
+                                    
                                     <% if (isAdmin) { %>
                                         <div class="modal fade" id="editFileModal<%= file._id %>" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><form action="/admin/edit-file" method="POST"><div class="modal-body"><input type="hidden" name="sectionId" value="<%= section._id %>"><input type="hidden" name="bookId" value="<%= book._id %>"><input type="hidden" name="fileId" value="<%= file._id %>"><input type="text" name="fileName" class="form-control mb-2" value="<%= file.fileName %>"><input type="url" name="fileUrl" class="form-control mb-2" value="<%= file.filePath %>"><input type="text" name="description" class="form-control" value="<%= file.description %>"></div><div class="modal-footer"><button type="submit" class="btn btn-primary">حفظ</button></div></form></div></div></div>
                                     <% } %>
                                 <% }) %>
-                            <% } else { %>
-                                <small class="text-muted">لا يوجد ملفات في هذا القسم.</small>
-                            <% } %>
-                        </div>
+                            </div>
+                        <% } %>
                     </div>
                 </div>
             </div>
-
-            <% if (isAdmin) { %>
-                <div class="modal fade" id="addFileModal<%= section._id %>" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><form action="/admin/add-link" method="POST"><div class="modal-header"><h5 class="modal-title">إضافة ملف جديد</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><input type="hidden" name="sectionId" value="<%= section._id %>"><input type="hidden" name="bookId" value="<%= book._id %>"><input type="text" name="fileName" class="form-control mb-2" placeholder="اسم الملف" required><input type="url" name="fileUrl" class="form-control mb-2" placeholder="رابط درايف" required><input type="text" name="description" class="form-control" placeholder="وصف (اختياري)"></div><div class="modal-footer"><button type="submit" class="btn btn-success">حفظ</button></div></form></div></div></div>
-                <div class="modal fade" id="editSectionModal<%= section._id %>" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><form action="/admin/edit-section/<%= section._id %>" method="POST"><div class="modal-body"><input type="text" name="name" class="form-control" value="<%= section.name %>" required></div><div class="modal-footer"><button type="submit" class="btn btn-primary">حفظ</button></div></form></div></div></div>
-            <% } %>
+            
+            <div class="modal fade" id="addLinkModal<%= section._id %>" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><form action="/admin/add-link" method="POST"><div class="modal-body"><input type="hidden" name="sectionId" value="<%= section._id %>"><input type="hidden" name="bookId" value="<%= book._id %>"><input type="text" name="fileName" class="form-control mb-2" placeholder="اسم الملف" required><input type="url" name="fileUrl" class="form-control mb-2" placeholder="رابط درايف" required><input type="text" name="description" class="form-control" placeholder="وصف (اختياري)"></div><div class="modal-footer"><button type="submit" class="btn btn-success">حفظ</button></div></form></div></div></div>
+            <% if (isAdmin) { %><div class="modal fade" id="editSectionModal<%= section._id %>" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><form action="/admin/edit-section/<%= section._id %>" method="POST"><div class="modal-body"><input type="text" name="name" class="form-control" value="<%= section.name %>" required></div><div class="modal-footer"><button type="submit" class="btn btn-primary">حفظ</button></div></form></div></div></div><% } %>
         <% }) %>
     <% } else { %>
-        <div class="text-center py-5 text-muted"><h4>لا يوجد أقسام بعد.</h4></div>
+        <div class="text-center py-5 text-muted"><h4>لا يوجد أقسام.</h4></div>
     <% } %>
 </div>
 
-<div class="modal fade" id="addSectionModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><form action="/admin/add-section" method="POST"><div class="modal-header"><h5 class="modal-title">إضافة قسم جديد</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><input type="hidden" name="bookId" value="<%= book._id %>"><input type="text" name="name" class="form-control" placeholder="اسم القسم (مثال: الوحدة الأولى)" required></div><div class="modal-footer"><button type="submit" class="btn btn-success">إضافة</button></div></form></div></div></div>
+<div class="modal fade" id="addSectionModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><form action="/admin/add-section" method="POST"><div class="modal-body"><input type="hidden" name="bookId" value="<%= book._id %>"><input type="text" name="name" class="form-control" placeholder="اسم القسم" required></div><div class="modal-footer"><button type="submit" class="btn btn-primary">إنشاء</button></div></form></div></div></div>
